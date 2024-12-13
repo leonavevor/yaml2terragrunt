@@ -58,3 +58,6 @@ Performance overhead of conversion
 - Support for complex Terragrunt inheritance
 - Validation against Terraform schemas
 - Templating support
+
+### Contributing:
+[Contribution guidelines for this project](.github/CONTRIBUTING.md)
