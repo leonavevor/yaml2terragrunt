@@ -24,3 +24,37 @@ Future objectives for yaml2terragrunt may include:
 
 ### Summary:
 By addressing these challenges, yaml2terragrunt aims to provide a more flexible, maintainable, and scalable approach to managing Terragrunt configurations for complex infrastructure projects.
+
+## Recommended Workflow
+Create YAML configuration files with a standard structure
+Use the Python script to convert YAML to Terragrunt HCL
+Run Terragrunt/Terraform as normal with generated HCL files
+
+### Example YAML Configuration:
+```yaml
+source: "github.com/module/path"
+backend: "s3"
+bucket: "my-terraform-state"
+key: "environment/component"
+region: "us-west-2"
+inputs:
+  instance_type: "t3.micro"
+  environment: "staging"
+```
+
+### Considerations and Limitations
+Requires PyYAML and potentially tfmt for JSON to HCL conversion
+Complex configurations might need manual tweaking
+Performance overhead of conversion
+
+### Dependencies:
+- PyYAML
+- tfmt (optional, for JSON to HCL conversion)
+- Python 3.7+
+
+
+### Potential Enhancements:
+- Add robust error handling
+- Support for complex Terragrunt inheritance
+- Validation against Terraform schemas
+- Templating support

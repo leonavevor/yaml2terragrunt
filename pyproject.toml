@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "yaml2terragrunt"
+version = "0.1.0"
+description = "yaml2terragrunt is an open-source project designed to enable the dynamic creation of Terragrunt files, folders, and configurations using a declarative YAML approach. The primary objective is to simplify and streamline the management of complex infrastructure-as-code setups, particularly for organizations dealing with multiple environments, regions, and services."
+authors = ["Leonard Avevor <leonavevor@gmail.com>"]
+license = "GPL-3.0"
+readme = "README.md"
+packages = [
+    { include = "src" }
+]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<4.0"
+PyYAML = "^6.0.2"
+
+[tool.poetry.dev-dependencies]
+
+[tool.coverage.run]
+omit = [
+    "**/tests/*",
+    "**/dist/*",
+    "**/infra/*",
+]
+
+[tool.coverage.report]
+skip_empty = true
+include_namespace_packages = true
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
