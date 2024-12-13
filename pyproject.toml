@@ -1,8 +1,12 @@
+[project.urls]
+Homepage = "https://github.com/leonavevor/yaml2terragrunt"
+Issues = "https://github.com/leonavevor/yaml2terragrunt/issues"
+
 [tool.poetry]
 name = "yaml2terragrunt"
-version = "0.1.0"
+version = "0.1.1"
 description = "yaml2terragrunt is an open-source project designed to enable the dynamic creation of Terragrunt files, folders, and configurations using a declarative YAML approach. The primary objective is to simplify and streamline the management of complex infrastructure-as-code setups, particularly for organizations dealing with multiple environments, regions, and services."
-authors = ["Leonard Avevor <leonavevor@gmail.com>"]
+authors = ["Leonard Avevor <deamcoder@gmail.com>"]
 license = "GPL-3.0"
 readme = "README.md"
 packages = [
@@ -29,3 +33,8 @@ include_namespace_packages = true
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools_scm]
