@@ -1,8 +1,295 @@
-source: "github.com/module/path"
-backend: "s3"
-bucket: "my-terraform-state"
-key: "environment/component"
-region: "us-west-2"
-inputs:
-  instance_type: "t3.micro"
-  environment: "staging"
+#############################################################################
+# Purpose: to make terragrunt flexible/declarative and easy to use
+# no need to manually create cumbaersome directory structures/hierarchies which defeats of keeping terragrunt dry
+# no need to manually create terragrunt.hcl files
+# no need for moving bulky folders around
+# no need to repeat content of environment folders, keep it dry
+# ensures modularity and reusability
+# ensures consistency and maintainability
+# ensures security and compliance
+# uses yaml for easy readability and maintainability
+# uses jinja2 for templating
+# uses terragrunt for infrastructure as code
+# uses terraform for provisioning
+# uses terraform and terragrunt built-in functions plus custom functions to make it more powerful
+# runs from cli, example: yaml2terragrunt -f tests/test.yaml
+# auto creates the hierarchies and terragrunt.hcl files and needed dependencies.
+# auto includes the parent child hcl files such as terragrunt.hcl(parent) and terragrunt.hcl(child) and common dynamic_backend_genrator.hcl and so on.
+# support hooks just like terragrunt does
+# support retries just like terragrunt does
+# support outputs just like terragrunt does
+# support variables and parameters just like terragrunt does with precedence order such as: globals, parameters, variables, inputs
+# support exclusion of modules similar to terragrunt
+# comprehensible syntax and structure for easy understanding, similar to ado pipelines yaml
+# supports linting and validation
+# supports inline expressions and functions similar to ado pipelines expressions
+#############################################################################
+
+parameters:
+  - name: "environment"
+    type: "string"
+    default: "dev"
+    description: "The environment to deploy the resources to."
+
+  - name: "location"
+    type: "string"
+    default: "swedencentral"
+    description: "The location to deploy the resources to."
+
+  - name: "tags"
+    type: "object"
+    default: {
+      environment: {{ param.environment }},
+      component: "test",
+      owner: "devops",
+      project: "my-project",
+      managed_by: "terraform",
+      cost_center: "12345",
+      contact: "example@my-org.com"
+    }
+    description: "The tags to apply to the resources."
+
+globals:
+  tf_backend_config:
+    backend_type: "azurerm"
+    resource_group_name: "my-rg"
+    storage_account_name: "my-storage-account"
+    container_name: "tfstate"
+    key: "{{ environment }}.terraform.tfstate"
+  tf_providers:
+    azurerm: "2.0.0"
+    random: "2.2.0"
+    null: "2.1.0"
+    template: "2.1.2"
+    local: "1.4.0"
+  environment: "prod"
+  vars:
+    location: "{{ param.location || 'swedencentral' }}"
+    tags:
+      environment: {{ environment }}
+      component: "test"
+      owner: "devops"
+      project: "my-project"
+      managed_by: "terraform"
+      cost_center: "12345"
+      contact: "example@my-org.com"
+  exclude_modules:
+    - "module.permissions"
+
+modules:
+  - source: "git::github.com/module//resource-group?ref=v1.0.0"
+    name: "resource-group-001"
+    inputs:
+      name: "resource-group-001"
+      location: {{ var.location }}
+      tags: {{ var.tags }}
+    outputs:
+      name: {{ module.resource-group-001.outputs.name }}
+      id: "{{ module.resource-group-001.outputs.id }}"
+
+  - source: "git::github.com/module//naming?ref=v1.0.0"
+    name: "naming"
+    parameters:
+      prefix: "my"
+      purpose: "test"
+      region: "swedencentral"
+      stack: "dev"
+      suffix: ""
+    inputs:
+      region: "{{ param.naming.parameters.region }}"
+      prefix: "{{ param.naming.parameters.prefix }}"
+      purpose: "{{ param.naming.parameters.purpose }}"
+      stack: "{{ param.naming.parameters.stack }}"
+      suffix: "{{ param.naming.parameters.suffix }}"
+    outputs:
+      object: {
+        this: "{{ **module.naming.outputs }}" # ** means serialize the object as a dictionary
+      }
+      file: 
+        name: "file1"
+        content: "{{ module.naming.outputs | tojson }}"
+        target_path: "./terraform/modules//naming/outputs.json"
+
+  - source: "./terraform/modules//vnet"
+    name: "vnet-001"
+    depends_on: ["module.naming", "module.resource-group-001"]
+    inputs:
+      name: "vnet-001"
+      location: {{ var.location }}
+      use_existing: true
+    outputs:
+      name: {{ module.vnet-001.outputs.name }}
+      id: "{{ module.vnet-001.outputs.id }}"
+      address_space: "{{ module.vnet-001.outputs.address_space }}"
+
+  - source: "git::github.com/module//nsg?ref=v1.0.0"
+    name: "nsg-subnet-001"
+    depends_on: ["module.vnet-001"]
+    inputs:
+      - name: "nsg-subnet-001"
+        location: {{ var.location }}
+        resource_group_name: {{ module.vnet-001.outputs.name }}
+        rules: [
+          {
+            name: "AllowHttpsInbound",
+            priority: 400,
+            direction: "Inbound",
+            access: "Allow",
+            protocol: "Tcp",
+            source_port_range: "*",
+            destination_port_range: "443",
+            source_address_prefix: "*",
+            destination_address_prefix: "*"
+          },
+          {
+            name: "AllowHttpsOutbound",
+            priority: 300,
+            direction: "Outbound",
+            access: "Allow",
+            protocol: "Tcp",
+            source_port_range: "*",
+            destination_port_range: "443",
+            source_address_prefix: "*",
+            destination_address_prefix: "*"
+          }
+        ]
+        tags: {{ var.tags }}
+      - name: "nsg-subnet-002"
+        location: {{ var.location }}
+        resource_group_name: {{ module.vnet-001.outputs.name }}
+        tags: {{ var.tags }}
+    outputs:
+      object: {
+        nsg-subnet-001: {
+          name: "{{ module.nsg-subnet-001.outputs.name }}",
+          id: "{{ module.nsg-subnet-001.outputs.id }}"
+        },
+        nsg-subnet-002: {
+          name: "{{ module.nsg-subnet-002.outputs.name }}",
+          id: "{{ module.nsg-subnet-002.outputs.id }}"
+        }
+      }
+
+  # subnet with nsg associations
+  - source: "git::github.com/module//subnet?ref=v1.0.0"
+    name: "subnet-001"
+    depends_on: ["module.vnet-001"]
+    inputs:
+      - name: "subnet-001"
+        location: {{ var.location }}
+        resource_group_name: {{ module.vnet-001.outputs.name }}
+        vnet_name: {{ module.vnet-001.outputs.name }}
+        address_prefix: "{{ cidrsubnet(module.vnet-001.outputs.address_space, 8, 0) }}"
+        nsg_id: {{ module.nsg-001.outputs.id }}
+        tags: {{ var.tags }}
+      - name: "subnet-002"
+        location: {{ var.location }}
+        resource_group_name: {{ module.vnet-001.outputs.name }}
+        vnet_name: {{ module.vnet-001.outputs.name }}
+        address_prefix: "{{ cidrsubnet(module.vnet-001.outputs.address_space, 8, 1) }}"
+        nsg_id: {{ module.nsg-002.outputs.id }}
+        tags: {{ var.tags }}
+    outputs:
+      object: {
+        subnet-001: {
+          name: "{{ module.subnet-001.outputs.name }}",
+          id: "{{ module.subnet-001.outputs.id }}"
+        },
+        subnet-002: {
+          name: "{{ module.subnet-002.outputs.name }}",
+          id: "{{ module.subnet-002.outputs.id }}"
+        }
+      }
+
+  - source: "git::github.com/module//storage-account?ref=v1.0.0"
+    name: "storage-account-001"
+    depends_on: ["module.nsg-subnet-001"]
+    inputs:
+      name: "storageaccount001"
+      sku: "Standard_LRS"
+      location: {{ var.location }}
+      resource_group_name: {{ module.resource-group-001.outputs.name }}
+      tags:
+        environment: {{ environment }}
+        component: "storage"
+        owner: "devops"
+        project: "my-project"
+        managed_by: "terraform"
+        cost_center: "12345"
+        contact: "example@my-org.com"
+    outputs:
+      name: {{ module.storage-account-001.outputs.name }}
+      id: "{{ module.storage-account-001.outputs.id }}"
+  
+  - source: "./terraform/modules//key-vault"
+    name: "key-vault-001"
+    depends_on: ["module.subnet-001"]
+    variables:
+      location: "westeurope"
+      this_tags: "{ location: {{ var.location }} }"
+    inputs:
+      name: "key-vault-001"
+      location: "swedencentral"
+      sku: "standard"
+      tags: {{ merge(var.tags, var.this_tags) }}
+
+  - source: "./terraform/modules//app-service-plan"
+    name: "app-service-plan-001"
+    depends_on: ["module.storage-account-001"]
+    inputs:
+      name: "app-service-plan-001"
+      location: {{ var.location }}
+      resource_group_name: {{ module.resource-group-001.outputs.name }}
+      sku: "F1"
+      tags: {{ var.tags }}
+    outputs:
+      name: {{ module.app-service-plan-001.outputs.name }}
+      id: "{{ module.app-service-plan-001.outputs.id }}"
+
+  - source: "./terraform/modules//app-service"
+    name: "app-service-001"
+    depends_on: ["module.storage-account-001", "module.app-service-plan-001", "module.key-vault-001"]
+    variables:
+      secret_api_key: decrypt_secret(file("./path/to/secret")) # any variable prefixed with secret_ will be treated as a secret (sensitive, temporally encrypted, masked, cleaned up after use)
+    inputs:
+      name: "app-service-001"
+      location: {{ var.location }}
+      resource_group_name: {{ module.resource-group-001.outputs.name }}
+      app_service_plan_id: {{ module.app-service-plan-001.outputs.id }}
+      kind: "webapp"
+      site_config: {
+        always_on: true,
+        dotnet_framework_version: "v4.0",
+        http2_enabled: true,
+        linux_fx_version: "DOTNETCORE|3.1",
+        min_tls_version: "1.2",
+        websockets_enabled: true
+      }
+      app_settings: {
+        "WEBSITE_RUN_FROM_PACKAGE": "1",
+        "WEBSITE_NODE_DEFAULT_VERSION": "14.17.0",
+        "WEBSITE_TIME_ZONE": "W. Europe Standard Time"
+      }
+      tags: {{ var.tags }}
+    hooks:
+      - name: "cleanup"
+        type: "before"
+        run_on: ["plan", "apply"]
+        command: "echo 'Cleaning up resources...'"
+      - name: "notify"
+        type: "after"
+        run_on: ["apply"]
+        command: "echo 'Resources have been deployed successfully!'"
+      - name: "cleanup_cache"
+        type: "error"
+        run_on: ["apply"]
+        command: "echo 'Cleaning up cache...'"
+    retries:
+      max_retries: 3
+      delay: 5
+      backoff: 2
+      error_pattern: "^Error: .*startup failed.*$" # regex pattern to match error messages
+    outputs:
+      name: {{ module.app-service-001.outputs.name }}
+      id: "{{ module.app-service-001.outputs.id }}"
+    
