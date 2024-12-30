@@ -1,8 +1,8 @@
-
-import os
-import yaml
 import json
+import os
 import subprocess
+
+import yaml
 
 
 def convert_yaml_to_terragrunt(yaml_path, output_path=None):
@@ -16,20 +16,23 @@ def convert_yaml_to_terragrunt(yaml_path, output_path=None):
     Returns:
         str: HCL configuration as a string
     """
-    # Read YAML file
-    with open(yaml_path, 'r') as file:
-        config = yaml.safe_load(file)
+    try:
+        # Read YAML file
+        with open(yaml_path, "r") as file:
+            config = yaml.safe_load(file)
+    except yaml.YAMLError as e:
+        raise ValueError(f"Error parsing YAML file: {e}")
+    except FileNotFoundError:
+        raise FileNotFoundError(f"YAML file not found: {yaml_path}")
 
     # Convert to JSON (easier to process)
     json_config = json.dumps(config, indent=2)
 
-    # Use tf JSON to HCL converter
-    hcl_conversion = subprocess.run(
-        ['tfmt', '-json', '-', '-o', output_path or '/dev/stdout'],
-        input=json_config.encode(),
-        capture_output=True,
-        text=True
-    )
+    try:
+        # Use tf JSON to HCL converter
+        hcl_conversion = subprocess.run(["tfmt", "-json", "-", "-o", output_path or "/dev/stdout"], input=json_config.encode(), capture_output=True, text=True, check=True)
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"Error during HCL conversion: {e.stderr}")
 
     return hcl_conversion.stdout
 
@@ -66,9 +69,8 @@ remote_state {{
     return hcl_template
 
 
-
 class TerragruntYAMLProcessor:
-    def __init__(self, base_dir='.'):
+    def __init__(self, base_dir="."):
         self.base_dir = base_dir
 
     def process_yaml_configs(self, yaml_files):
@@ -85,20 +87,15 @@ class TerragruntYAMLProcessor:
 
     def _load_yaml(self, path):
         """Load YAML configuration"""
-        with open(path, 'r') as f:
+        with open(path, "r") as f:
             return yaml.safe_load(f)
 
     def _convert_to_terragrunt(self, config):
         """Convert YAML config to Terragrunt HCL"""
-        # Advanced conversion logic with validation
-        pass
+        return generate_terragrunt_config(config)
 
     def _write_terragrunt_config(self, source_yaml, hcl_content):
         """Write Terragrunt configuration"""
-        output_path = os.path.join(
-            self.base_dir,
-            os.path.splitext(os.path.basename(source_yaml))[0] + '.hcl'
-        )
-        with open(output_path, 'w') as f:
+        output_path = os.path.join(self.base_dir, os.path.splitext(os.path.basename(source_yaml))[0] + ".hcl")
+        with open(output_path, "w") as f:
             f.write(hcl_content)
-

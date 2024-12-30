@@ -1,0 +1,21 @@
+name: Question or bug report
+description: Submit a question or bug report to help us improve yaml2terragrunt
+labels: []
+body:
+  - type: textarea
+    attributes:
+      label: Issue
+      description: Please describe your problem or question.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Version and model info
+      description: Please include yaml2terragrunt version, etc... and any other switches or config settings that are active.
+      placeholder: |
+        Yaml2terragrunt v0.XX.Y
+        Git repo: .git with ### files
+        Repo-map: using #### tokens
+    validations:
+      required: false
