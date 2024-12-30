@@ -2,6 +2,7 @@ import json
 import os
 import subprocess
 
+import hcl2
 import yaml
 
 
@@ -30,11 +31,12 @@ def convert_yaml_to_terragrunt(yaml_path, output_path=None):
 
     try:
         # Use tf JSON to HCL converter
-        hcl_conversion = subprocess.run(["tfmt", "-json", "-", "-o", output_path or "/dev/stdout"], input=json_config.encode(), capture_output=True, text=True, check=True)
+        # hcl_conversion = hcl2.loads(json_config)
+        hcl_conversion = json_config
     except subprocess.CalledProcessError as e:
         raise RuntimeError(f"Error during HCL conversion: {e.stderr}")
 
-    return hcl_conversion.stdout
+    return hcl_conversion
 
 
 def generate_terragrunt_config(yaml_config):

@@ -36,7 +36,7 @@ def convert_yaml_to_terragrunt(yaml_path, output_path=None):
     
     # Use tf JSON to HCL converter
     hcl_conversion = subprocess.run(
-        ['tfmt', '-json', '-', '-o', output_path or '/dev/stdout'], 
+        ['hcl2', '-json', '-', '-o', output_path or '/dev/stdout'], 
         input=json_config.encode(), 
         capture_output=True, 
         text=True
@@ -136,13 +136,13 @@ inputs:
 ```
 
 5. **Considerations and Limitations**
-- Requires `PyYAML` and potentially `tfmt` for JSON to HCL conversion
+- Requires `PyYAML` and potentially `hcl2` for JSON to HCL conversion
 - Complex configurations might need manual tweaking
 - Performance overhead of conversion
 
 **Dependencies**:
 - PyYAML
-- `tfmt` (optional, for JSON to HCL conversion)
+- `hcl2` (optional, for JSON to HCL conversion)
 - Python 3.7+
 
 **Potential Enhancements**:

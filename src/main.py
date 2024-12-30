@@ -1,6 +1,6 @@
 import argparse
 
-from utils import convert_yaml_to_terragrunt
+from .utils import convert_yaml_to_terragrunt  # noqa: F401
 
 
 def main():

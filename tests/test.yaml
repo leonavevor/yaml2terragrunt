@@ -1,0 +1,8 @@
+source: "github.com/module/path"
+backend: "s3"
+bucket: "my-terraform-state"
+key: "environment/component"
+region: "us-west-2"
+inputs:
+  instance_type: "t3.micro"
+  environment: "staging"

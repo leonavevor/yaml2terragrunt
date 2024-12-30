@@ -43,13 +43,13 @@ inputs:
 ```
 
 ### Considerations and Limitations
-Requires PyYAML and potentially tfmt for JSON to HCL conversion
+Requires PyYAML and potentially hcl2 for JSON to HCL conversion
 Complex configurations might need manual tweaking
 Performance overhead of conversion
 
 ### Dependencies:
 - PyYAML
-- tfmt (optional, for JSON to HCL conversion)
+- hcl2 (optional, for JSON to HCL conversion)
 - Python 3.7+
 
 
