@@ -1,1 +1,0 @@
-# Root Terragrunt configuration

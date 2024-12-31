@@ -1,8 +1,8 @@
 import argparse
 
-from .config_parser import parse_config
-from .terragrunt_executor import execute_terragrunt
-from .terragrunt_generator import generate_terragrunt_files
+from src.config_parser import parse_config
+from src.terragrunt_executor import execute_terragrunt
+from src.terragrunt_generator import generate_terragrunt_files
 
 
 def main():
@@ -12,7 +12,15 @@ def main():
 
     config = parse_config(args.file)
     generate_terragrunt_files(config)
-    execute_terragrunt(config)
+
+    # Add more configuration based on the module inputs and outputs
+    execute_terragrunt(
+        config=config,
+        root_path="./terragrunt/",
+        action="plan",
+        fail_fast=True,
+        # kwargs={"--terragrunt-working-dir": "./"},
+    )
 
 
 if __name__ == "__main__":
