@@ -108,9 +108,9 @@ modules:
       file: 
         name: "file1"
         content: "{{ module.naming.outputs | tojson }}"
-        target_path: "./terraform/.modules//naming/outputs.json"
+        target_path: "terraform/.modules//naming/outputs.json"
 
-  - source: "./terraform/.modules//vnet"
+  - source: "terraform/.modules//vnet"
     name: "vnet-001"
     depends_on: ["module.naming", "module.resource-group-001"]
     inputs:
@@ -221,7 +221,7 @@ modules:
       name: "{{ module.storage-account-001.outputs.name }}"
       id: "{{ module.storage-account-001.outputs.id }}"
   
-  - source: "./terraform/.modules//key-vault"
+  - source: "terraform/.modules//key-vault"
     name: "key-vault-001"
     depends_on: ["module.subnet-001"]
     variables:
@@ -233,7 +233,7 @@ modules:
       sku: "standard"
       tags: "{{ merge(var.tags, var.this_tags) }}"
 
-  - source: "./terraform/.modules//app-service-plan"
+  - source: "terraform/.modules//app-service-plan"
     name: "app-service-plan-001"
     depends_on: ["module.storage-account-001"]
     inputs:
@@ -246,7 +246,7 @@ modules:
       name: "{{ module.app-service-plan-001.outputs.name }}"
       id: "{{ module.app-service-plan-001.outputs.id }}"
 
-  - source: "./terraform/.modules//app-service"
+  - source: "terraform/.modules//app-service"
     name: "app-service-001"
     depends_on: ["module.storage-account-001", "module.app-service-plan-001", "module.key-vault-001"]
     variables:
