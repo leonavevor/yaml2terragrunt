@@ -61,7 +61,7 @@
     },
     "modules": [
         {
-            "source": "git::github.com/module//resource-group?ref=v1.0.0",
+            "source": "git::git@github.com/module//resource-group?ref=v1.0.0",
             "name": "resource-group-001",
             "description": "This module creates a resource group.",
             "inputs": {
@@ -75,7 +75,7 @@
             }
         },
         {
-            "source": "git::github.com/module//naming?ref=v1.0.0",
+            "source": "git::git@github.com/module//naming?ref=v1.0.0",
             "name": "naming",
             "description": "This module generates naming conventions for resources.",
             "parameters": {
@@ -123,7 +123,7 @@
             }
         },
         {
-            "source": "git::github.com/module//nsg?ref=v1.0.0",
+            "source": "git::git@github.com/module//nsg?ref=v1.0.0",
             "name": "nsg-subnet-001",
             "description": "This module creates a network security group.",
             "depends_on": [
@@ -181,7 +181,7 @@
             }
         },
         {
-            "source": "git::github.com/module//subnet?ref=v1.0.0",
+            "source": "git::git@github.com/module//subnet?ref=v1.0.0",
             "name": "subnet-001",
             "description": "This module creates a subnet.",
             "depends_on": [
@@ -221,7 +221,7 @@
             }
         },
         {
-            "source": "git::github.com/module//storage-account?ref=v1.0.0",
+            "source": "git::git@github.com/module//storage-account?ref=v1.0.0",
             "name": "storage-account-001",
             "description": "This module creates a storage account.",
             "depends_on": [

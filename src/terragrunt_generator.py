@@ -12,17 +12,20 @@ def generate_terragrunt_files(config):
     # Create the root root.hcl file
     with open(os.path.join(root_path, "root.hcl"), "w") as root_file:
         root_file.write("# Root Terragrunt configuration\n")
-        root_file.write("""
+        root_file.write(
+            """
         locals {
             # Add locals here
         }
-        """)
+        """
+        )
 
     print("config: ", json.dumps(config, indent=4))
 
     # Generate the dynamic terragrunt backend configuration
     with open(os.path.join(root_path, "backend.hcl"), "w") as backend_file:
-        backend_file.write(f"""
+        backend_file.write(
+            f"""
 			generate "backend" {{
 			path      = "backend.tf"
 			if_exists = "overwrite_terragrunt"
@@ -38,7 +41,8 @@ def generate_terragrunt_files(config):
 			}}
 			EOF
 			}}
-			""")
+			"""
+        )
 
     # Create terragrunt child directories (modules) and files based on the config
     for module in config["modules"]:
@@ -48,11 +52,19 @@ def generate_terragrunt_files(config):
         with open(os.path.join(module_path, "terragrunt.hcl"), "w") as file:
             file.write(f"# Terragrunt configuration for {module['name']}\n")
             file.write(f"locals {{\n  # Add locals here\n}}\n")
-            file.write(f'include "root" {{\n  path = find_in_parent_folders("root.hcl")\n}}\n')
-            file.write(f"include \"backend\" {{\n  path = find_in_parent_folders('backend.hcl')\n}}\n")
+            file.write(
+                f'include "root" {{\n  path = find_in_parent_folders("root.hcl")\n}}\n'
+            )
+            file.write(
+                f"include \"backend\" {{\n  path = find_in_parent_folders('backend.hcl')\n}}\n"
+            )
             # file.write(f"dependency \"{module['depends_on']}\" {{\n # Add dependencies here\n}}\n")
-            if "git::" in module["source"]:
-                file.write(f"terraform {{\n  source = \"{module['source']}\"\n # Add additional configuration here\n}}\n")
+            if "git::git@" in module["source"]:
+                file.write(
+                    f"terraform {{\n  source = \"{module['source']}\"\n # Add additional configuration here\n}}\n"
+                )
             else:
-                file.write(f"terraform {{\n  source = \"${{get_repo_root()}}/{module['source']}\"\n  # Add additional configuration here\n}}\n")
+                file.write(
+                    f"terraform {{\n  source = \"${{get_repo_root()}}/{module['source']}\"\n  # Add additional configuration here\n}}\n"
+                )
             file.write(f"inputs = {{\n # Add inputs here\n}}\n")
