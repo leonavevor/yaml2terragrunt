@@ -6,8 +6,12 @@ from src.terragrunt_generator import generate_terragrunt_files
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate and execute Terragrunt configurations from YAML.")
-    parser.add_argument("-f", "--file", required=True, help="Path to the YAML configuration file.")
+    parser = argparse.ArgumentParser(
+        description="Generate and execute Terragrunt configurations from YAML."
+    )
+    parser.add_argument(
+        "-f", "--file", required=True, help="Path to the YAML configuration file."
+    )
     args = parser.parse_args()
 
     config = parse_config(args.file)
@@ -28,4 +32,4 @@ if __name__ == "__main__":
 
 
 # Usage (as python module):
-# $ python -m src.cli -f tests/stest.yaml
+# $ python -m src.cli -f ./src/tests/sample_tg_declaration.yaml
