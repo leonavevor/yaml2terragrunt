@@ -12,7 +12,11 @@ def generate_terragrunt_files(config):
     # Create the root root.hcl file
     with open(os.path.join(root_path, "root.hcl"), "w") as root_file:
         root_file.write("# Root Terragrunt configuration\n")
-        # root_file.write("terraform {\n  source = \"./modules\"\n}\n")
+        root_file.write("""
+        locals {
+            # Add locals here
+        }
+        """)
 
     print("config: ", json.dumps(config, indent=4))
 
