@@ -224,7 +224,7 @@ modules:
       location: "{{ var.location }}"
       resource_group_name: "{{ module.resource-group-001.outputs.name }}"
       tags:
-        environment: "{{ environment }}"
+        environment: "{{ var.environment }}"
         component: "storage"
         owner: "devops"
         project: "my-project"

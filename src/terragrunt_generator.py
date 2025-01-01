@@ -9,8 +9,8 @@ def generate_terragrunt_files(config):
     root_path = "./terragrunt/"
     os.makedirs(root_path, exist_ok=True)
 
-    # Create the root terragrunt.hcl file
-    with open(os.path.join(root_path, "terragrunt.hcl"), "w") as root_file:
+    # Create the root root.hcl file
+    with open(os.path.join(root_path, "root.hcl"), "w") as root_file:
         root_file.write("# Root Terragrunt configuration\n")
         # root_file.write("terraform {\n  source = \"./modules\"\n}\n")
 
@@ -44,7 +44,7 @@ def generate_terragrunt_files(config):
         with open(os.path.join(module_path, "terragrunt.hcl"), "w") as file:
             file.write(f"# Terragrunt configuration for {module['name']}\n")
             file.write(f"locals {{\n  # Add locals here\n}}\n")
-            file.write(f'include "root" {{\n  path = find_in_parent_folders()\n}}\n')
+            file.write(f'include "root" {{\n  path = find_in_parent_folders("root.hcl")\n}}\n')
             file.write(f"include \"backend\" {{\n  path = find_in_parent_folders('backend.hcl')\n}}\n")
             # file.write(f"dependency \"{module['depends_on']}\" {{\n # Add dependencies here\n}}\n")
             if "git::" in module["source"]:
