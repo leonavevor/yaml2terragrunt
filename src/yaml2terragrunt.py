@@ -15,20 +15,15 @@ def create_directory_structure(base_path, modules):
         module_path = os.path.join(base_path, module['name'])
         os.makedirs(module_path, exist_ok=True)
 
-def create_terragrunt_hcl(module, context):
+def create_terragrunt_hcl(_, context):
     hcl_template = """
     terraform {
       source = "{{ module.source }}"
     }
 
+    # TODO: .items() fails
     inputs = {
       {% for key, value in module.inputs.items() %}
-      {{ key }} = "{{ value }}"
-      {% endfor %}
-    }
-
-    outputs = {
-      {% for key, value in module.outputs.items() %}
       {{ key }} = "{{ value }}"
       {% endfor %}
     }
@@ -44,7 +39,7 @@ def create_terragrunt_hcl(module, context):
     {% endif %}
 
     {% if module.dependencies %}
-    dependency {
+    dependency "{{ module.dependencies.name }}" {
       config_path = "{{ module.dependencies.config_path }}"
       mock_outputs = {
         {% for key, value in module.dependencies.mock_outputs.items() %}
@@ -57,7 +52,7 @@ def create_terragrunt_hcl(module, context):
     {% if module.hooks %}
     hooks {
       {% for hook in module.hooks %}
-      {{ hook.type }} {
+      {{ hook.type }} "{{ hook.name }}" {
         commands = [
           "{{ hook.command }}"
         ]
@@ -96,8 +91,9 @@ def main(yaml_file):
             hcl_file.write(hcl_content)
 
 if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser(description="Generate Terragrunt configuration from YAML")
-    parser.add_argument("-f", "--file", required=True, help="Path to the YAML configuration file")
-    args = parser.parse_args()
-    main(args.file)
+    #import argparse
+    #parser = argparse.ArgumentParser(description="Generate Terragrunt configuration from YAML")
+    #parser.add_argument("-f", "--file", required=True, help="Path to the YAML configuration file")
+    #args = parser.parse_args()
+    #main(args.file)
+    main("./src/tests/sample_tg_declaration.yaml")
